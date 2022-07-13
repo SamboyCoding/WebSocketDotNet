@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketWrenchSharp", "SocketWrenchSharp\SocketWrenchSharp.csproj", "{322D7F68-F94E-4C01-972D-F02F89422A1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketWrenchSharp.Tests", "SocketWrenchSharp.Tests\SocketWrenchSharp.Tests.csproj", "{234F046C-4B91-47D9-9C2C-E5CE9A2CDECD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{322D7F68-F94E-4C01-972D-F02F89422A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{322D7F68-F94E-4C01-972D-F02F89422A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{322D7F68-F94E-4C01-972D-F02F89422A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{322D7F68-F94E-4C01-972D-F02F89422A1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{234F046C-4B91-47D9-9C2C-E5CE9A2CDECD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{234F046C-4B91-47D9-9C2C-E5CE9A2CDECD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{234F046C-4B91-47D9-9C2C-E5CE9A2CDECD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{234F046C-4B91-47D9-9C2C-E5CE9A2CDECD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
