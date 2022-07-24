@@ -14,7 +14,7 @@ public class BasicTests : MakeConsoleWork
     public async void WebsocketCanConnect()
     {
         //Wrap in task.run to run in bg thread
-        var task = Task.Run(TestUtils.SpinUpSocketServerAndWaitForConnect);
+        var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         
         var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
         
@@ -52,8 +52,7 @@ public class BasicTests : MakeConsoleWork
         
         Output.WriteLine($"Generated 16 bytes: [{string.Join(", ", binaryData)}]. Sending...");
 
-        //Wrap in task.run to run in bg thread
-        var task = Task.Run(() => TestUtils.StartServerAndWaitForFirstWsMessage(16));
+        var task = TestUtils.StartServerAndWaitForFirstWsMessage(16);
 
         var clientSocket = new WebSocket("http://localhost:60606/", false);
         

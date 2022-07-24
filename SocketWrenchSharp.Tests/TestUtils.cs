@@ -34,7 +34,7 @@ internal static class TestUtils
 
     internal static async Task<ReceivedWebsocketPacket> StartServerAndWaitForFirstWsMessage(int length)
     {
-        var (webSocketContext, httpListener) = await Task.Run(SpinUpSocketServerAndWaitForConnect);
+        var (webSocketContext, httpListener) = await SpinUpSocketServerAndWaitForConnect();
 
         var ws = webSocketContext!.WebSocket;
 
