@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 
-#if !NET35
+#if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
@@ -35,7 +35,7 @@ public abstract class NetworkStreamProvider
         }
     }
     
-#if !NET35
+#if SUPPORTS_ASYNC
     public async Task WaitForDataAsync(int timeout = 5000)
     {
         var waited = 0;

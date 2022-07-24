@@ -4,8 +4,9 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using SocketWrenchSharp.Http;
+using SocketWrenchSharp.Utils;
 
-#if NETSTANDARD2_0_OR_GREATER || NETCOREAPP1_0_OR_GREATER || NET40_OR_GREATER
+#if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
@@ -21,7 +22,7 @@ public class WebSocket
 
     public WebSocket(string url, bool autoConnect = true)
     {
-        ValidateUrlScheme(ref url);
+        UriUtils.ValidateUrlScheme(ref url);
 
         _httpHandler = new HttpHandler(new Uri(url));
 
@@ -74,26 +75,7 @@ public class WebSocket
             throw new WebException($"Invalid or no Sec-WebSocket-Accept header in response (got \"{accept}\", expected \"{expectedAccept}\")");
     }
 
-    /// <summary>
-    /// Validates that the given url starts with either http, ws, or their secure variants.
-    /// If http(s), it will be changed to ws(s).
-    /// If none of the above, throws.
-    /// </summary>
-    /// <param name="url">The url to validate</param>
-    /// <exception cref="WebException">If the protocol of the URL is not http, https, ws, or wss</exception>
-    private static void ValidateUrlScheme(ref string url)
-    {
-        var uri = new Uri(url);
-
-        if (uri.Scheme == "http")
-            url = $"ws://{uri.Host}:{uri.Port}{uri.PathAndQuery}";
-        else if (uri.Scheme == "https")
-            url = $"wss://{uri.Host}:{uri.Port}{uri.PathAndQuery}";
-        else if (uri.Scheme is not "ws" and not "wss")
-            throw new WebException("Invalid url protocol. Must be one of http, https, ws or wss");
-    }
-
-#if NETSTANDARD2_0_OR_GREATER || NETCOREAPP1_0_OR_GREATER || NET40_OR_GREATER
+#if SUPPORTS_ASYNC
     public async Task ConnectAsync()
     {
         await SendHandshakeRequestAsync();

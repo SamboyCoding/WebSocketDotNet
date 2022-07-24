@@ -5,6 +5,8 @@
         <LangVersion>10</LangVersion>
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        
+        <DefineConstants Condition="'$(TargetFramework)' != 'net3.5'">SUPPORTS_ASYNC</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

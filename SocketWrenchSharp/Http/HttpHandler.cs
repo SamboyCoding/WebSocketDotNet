@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-#if !NET35
+#if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
@@ -45,7 +45,7 @@ public class HttpHandler
         return HttpResponse.Parse(s.ReadToEnd(_underlyingClient));
     }
     
-#if !NET35
+#if SUPPORTS_ASYNC
     public async Task<Stream> GetOrOpenStreamAsync()
     {
         if (_stream != null)

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Net.Sockets;
 
-#if !NET35
+#if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
@@ -24,7 +24,7 @@ public class RawTcpNetworkStreamProvider : NetworkStreamProvider
         return _lastStream = _client.GetStream();
     }
 
-#if !NET35
+#if SUPPORTS_ASYNC
     public override async Task<Stream> GetStreamAsync()
     {
         await _client.ConnectAsync(Host, Port);

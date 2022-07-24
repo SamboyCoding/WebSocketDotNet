@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using SocketWrenchSharp.Http;
 
-#if !NET35
+#if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
@@ -31,7 +31,7 @@ public static class Extensions
     public static void Write(this Stream s, byte[] bytes)
         => s.Write(bytes, 0, bytes.Length);
 
-#if !NET35
+#if SUPPORTS_ASYNC
     public static async Task WriteAsync(this Stream s, byte[] bytes)
         => await s.WriteAsync(bytes, 0, bytes.Length);
 #endif

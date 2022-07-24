@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Net.Security;
 
-#if !NET35
+#if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
@@ -24,7 +24,7 @@ public class EncryptedNetworkStreamProvider : RawTcpNetworkStreamProvider
         return sslStream;
     }
 
-#if !NET35
+#if SUPPORTS_ASYNC
     public override async Task<Stream> GetStreamAsync()
     {
         var tcpStream = await base.GetStreamAsync();
