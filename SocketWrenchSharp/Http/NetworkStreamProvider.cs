@@ -10,15 +10,17 @@ namespace SocketWrenchSharp.Http;
 
 public abstract class NetworkStreamProvider
 {
-    public string Host { get; }
+    private const int WaitIntervalMs = 10;
 
-    public int Port { get; }
+    protected string Host { get; }
+    protected int Port { get; }
+    
     public abstract bool AnythingToRead { get; }
 
-    public NetworkStreamProvider(string host, int port)
+    protected NetworkStreamProvider(string host, int port)
     {
-        this.Host = host;
-        this.Port = port;
+        Host = host;
+        Port = port;
     }
 
     public abstract Stream GetStream();
@@ -28,10 +30,10 @@ public abstract class NetworkStreamProvider
         var waited = 0;
         while (!AnythingToRead)
         {
-            if ((waited += 10) > timeout)
+            if ((waited += WaitIntervalMs) > timeout)
                 throw new Exception("Timeout waiting for response to initial handshake");
 
-            Thread.Sleep(10);
+            Thread.Sleep(WaitIntervalMs);
         }
     }
     
@@ -41,10 +43,10 @@ public abstract class NetworkStreamProvider
         var waited = 0;
         while (!AnythingToRead)
         {
-            if ((waited += 10) > timeout)
+            if ((waited += WaitIntervalMs) > timeout)
                 throw new Exception("Timeout waiting for response to initial handshake");
 
-            await Task.Delay(10);
+            await Task.Delay(WaitIntervalMs);
         }
     }
 

@@ -64,7 +64,7 @@ public class HttpHandler
 
         await _underlyingClient.WaitForDataAsync();
 
-        return HttpResponse.Parse(s.ReadToEnd(_underlyingClient));
+        return HttpResponse.Parse(await s.ReadToEndAsync(_underlyingClient));
     }
 #endif
 

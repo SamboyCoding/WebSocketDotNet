@@ -20,11 +20,15 @@ public class WebSocket
     private readonly SHA1 _sha1 = SHA1.Create();
     private readonly HttpHandler _httpHandler;
 
+    public WebSocketState State { get; private set; }
+
     public WebSocket(string url, bool autoConnect = true)
     {
         UriUtils.ValidateUrlScheme(ref url);
 
-        _httpHandler = new HttpHandler(new Uri(url));
+        _httpHandler = new(new(url));
+
+        State = WebSocketState.Closed;
 
         if (autoConnect)
             Connect();
@@ -33,10 +37,13 @@ public class WebSocket
     public void Connect()
     {
         SendHandshakeRequest();
+
+        State = WebSocketState.Open;
     }
 
     private void SendHandshakeRequest()
     {
+        State = WebSocketState.Connecting;
         var headers = BuildHandshakeHeaders();
 
         var resp = _httpHandler.SendRequestWithHeaders(headers);
@@ -79,10 +86,14 @@ public class WebSocket
     public async Task ConnectAsync()
     {
         await SendHandshakeRequestAsync();
+        
+        State = WebSocketState.Open;
     }
     
     private async Task SendHandshakeRequestAsync()
     {
+        State = WebSocketState.Connecting;
+        
         var headers = BuildHandshakeHeaders();
 
         var resp = await _httpHandler.SendRequestWithHeadersAsync(headers);
