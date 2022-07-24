@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+
+[assembly:InternalsVisibleTo("SocketWrenchSharp.Tests")]
 
 namespace SocketWrenchSharp;
 

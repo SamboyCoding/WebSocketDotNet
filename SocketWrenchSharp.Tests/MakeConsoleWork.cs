@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using SocketWrenchSharp.Utils;
 using Xunit.Abstractions;
 
 namespace SocketWrenchSharp.Tests;
@@ -24,6 +25,7 @@ public class MakeConsoleWork : IDisposable
         Console.SetOut(_originalOut);
     }
 
+    [NoCoverage]
     private class TestOutputTextWriter : TextWriter
     {
         private ITestOutputHelper Output;
