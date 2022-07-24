@@ -4,13 +4,13 @@ namespace SocketWrenchSharp.Tests;
 
 public class MakeConsoleWork : IDisposable
 {
-    private readonly ITestOutputHelper _output;
+    protected readonly ITestOutputHelper Output;
     private readonly TextWriter _originalOut;
     private readonly TextWriter _textWriter;
 
     public MakeConsoleWork(ITestOutputHelper output)
     {
-        _output = output;
+        Output = output;
         _originalOut = Console.Out;
         _textWriter = new StringWriter();
         Console.SetOut(_textWriter);
@@ -18,7 +18,7 @@ public class MakeConsoleWork : IDisposable
 
     public void Dispose()
     {
-        _output.WriteLine(_textWriter.ToString());
+        Output.WriteLine(_textWriter.ToString());
         Console.SetOut(_originalOut);
     }
 }

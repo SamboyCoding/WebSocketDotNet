@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using SocketWrenchSharp.Utils;
 
 namespace SocketWrenchSharp.Protocol;
 
-public struct WebSocketFragment
+public class WebSocketFragment
 {
+    public const byte MaxSingleFragmentPayloadSize = 125;
     private const byte ShortLengthExtended16Bit = 126;
     private const byte ShortLengthExtended64Bit = 127;
 
@@ -24,9 +27,29 @@ public struct WebSocketFragment
     
     private byte[] _rawPayload;
 
-    public ulong PayloadLength => _extendedPayloadLength == ulong.MaxValue ? _shortPayloadLength : _extendedPayloadLength;
+    public ulong PayloadLength => UsesExtendedPayloadLength ? _extendedPayloadLength : _shortPayloadLength;
 
     public byte[] Payload => _rawPayload;
+    
+    private bool UsesExtendedPayloadLength => _extendedPayloadLength != ulong.MaxValue;
+
+    private WebSocketFragment()
+    {
+        Mask = new byte[4];
+        _rawPayload = MiscUtils.EmptyArray<byte>();
+    }
+    
+    public WebSocketFragment(bool final, WebSocketOpcode opcode, byte[] payload, bool mask) : this()
+    {
+        IsFinal = final;
+        Opcode = opcode;
+        _rawPayload = (byte[])payload.Clone(); //Clone to avoid modifying the original array
+        
+        ComputeOutgoingLength();
+        
+        if(mask)
+            MaskPayload();
+    }
 
     /// <summary>
     /// Applies the mask to the payload in-place.
@@ -74,7 +97,7 @@ public struct WebSocketFragment
     /// <exception cref="IOException">If an error occurs when reading from the stream</exception>
     private void ReadLength(byte[] initialHeader, Stream stream)
     {
-        var shortLength = initialHeader[1].Bits(1, 7);
+        var shortLength = initialHeader[1].Bits(0, 6);
         if (shortLength == ShortLengthExtended16Bit)
         {
             //We don't need to access the existing buffered data so we can re-use it for the 16-bit length
@@ -108,6 +131,23 @@ public struct WebSocketFragment
         }
     }
 
+    private void ComputeOutgoingLength()
+    {
+        if (_rawPayload.Length < MaxSingleFragmentPayloadSize)
+        {
+            _shortPayloadLength = (byte)_rawPayload.Length;
+            _extendedPayloadLength = ulong.MaxValue;
+            return;
+        }
+
+        if (_rawPayload.Length < ushort.MaxValue)
+            _shortPayloadLength = ShortLengthExtended16Bit;
+        else
+            _shortPayloadLength = ShortLengthExtended64Bit;
+        
+        _extendedPayloadLength = (ulong)_rawPayload.Length;
+    }
+
     /// <summary>
     /// Read a WebSocketFragment from a stream.
     /// <br/>
@@ -126,12 +166,12 @@ public struct WebSocketFragment
         //Read initial data
         var ret = new WebSocketFragment
         {
-            IsFinal = buf[0].Bit(0),
-            Reserved1 = buf[0].Bit(1),
-            Reserved2 = buf[0].Bit(2),
-            Reserved3 = buf[0].Bit(3),
-            Opcode = (WebSocketOpcode)buf[0].Bits(4, 7),
-            IsMasked = buf[1].Bit(0),
+            IsFinal = buf[0].Bit(7),
+            Reserved1 = buf[0].Bit(6),
+            Reserved2 = buf[0].Bit(5),
+            Reserved3 = buf[0].Bit(4),
+            Opcode = (WebSocketOpcode)buf[0].Bits(0, 3),
+            IsMasked = buf[1].Bit(7),
         };
         
         //Length handling
@@ -140,7 +180,6 @@ public struct WebSocketFragment
         //Mask handling
         if (ret.IsMasked)
         {
-            ret.Mask = new byte[4];
             if (from.Read(ret.Mask, 0, 4) != 4)
                 throw new IOException("Failed to read 4-byte mask from stream");
         }
@@ -157,5 +196,64 @@ public struct WebSocketFragment
             ret.UnmaskPayload();
         
         return ret;
+    }
+
+    public byte[] Serialize()
+    {
+        byte[] toWrite;
+        if (!UsesExtendedPayloadLength && !IsMasked)
+        {
+            //Simple write of 2 byte header then payload
+            toWrite = new byte[2 + _rawPayload.Length];
+            WriteTwoByteHeader(toWrite);
+
+            Array.Copy(_rawPayload, 0, toWrite, 2, _rawPayload.Length);
+        } else if (!UsesExtendedPayloadLength && IsMasked)
+        {
+            //Two byte header, 4 byte mask, payload
+            toWrite = new byte[2 + 4 + _rawPayload.Length];
+            WriteTwoByteHeader(toWrite);
+            Array.Copy(Mask, 0, toWrite, 2, 4);
+            Array.Copy(_rawPayload, 0, toWrite, 6, _rawPayload.Length);
+        } else
+        {
+            //Two byte header, extended payload length, optional mask, payload
+            var payloadLengthLength = _shortPayloadLength == ShortLengthExtended16Bit ? 2 : 8;
+            var maskLength = IsMasked ? 4 : 0;
+            
+            toWrite = new byte[2 + payloadLengthLength + maskLength + _rawPayload.Length];
+            WriteTwoByteHeader(toWrite);
+
+            if (payloadLengthLength == 2)
+            {
+                //Big-endian 16-bit length
+                toWrite[2] = (byte)(_extendedPayloadLength >> 8);
+                toWrite[3] = (byte)_extendedPayloadLength;
+            } else
+            {
+                //Big-endian 64-bit length
+                var extendedPayloadLengthBytes = BitConverter.GetBytes(_extendedPayloadLength);
+                Array.Reverse(extendedPayloadLengthBytes);
+                Array.Copy(extendedPayloadLengthBytes, 0, toWrite, 2, 8);
+            }
+
+            if (IsMasked)
+            {
+                Array.Copy(Mask, 0, toWrite, 2 + payloadLengthLength, 4);
+            }
+
+            Array.Copy(_rawPayload, 0, toWrite, 2 + payloadLengthLength + maskLength, _rawPayload.Length);
+        }
+
+        return toWrite;
+    }
+
+    private void WriteTwoByteHeader(byte[] toWrite)
+    {
+        //Right to left: 4-bit opcode, reserved3, reserved2, reserved1, is final
+        toWrite[0] = (byte)((byte)Opcode | (byte)(IsFinal ? 0x80 : 0) | (byte)(Reserved1 ? 0x40 : 0) | (byte)(Reserved2 ? 0x20 : 0) | (byte)(Reserved3 ? 0x10 : 0));
+        
+        //Right to left: 7 bit payload length, 1 bit mask flag
+        toWrite[1] = (byte)(_shortPayloadLength | (byte)(IsMasked ? 0x80 : 0));
     }
 }

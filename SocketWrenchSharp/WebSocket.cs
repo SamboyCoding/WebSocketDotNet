@@ -4,6 +4,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using SocketWrenchSharp.Http;
+using SocketWrenchSharp.Messages;
 using SocketWrenchSharp.Utils;
 
 #if SUPPORTS_ASYNC
@@ -82,6 +83,22 @@ public class WebSocket
             throw new WebException($"Invalid or no Sec-WebSocket-Accept header in response (got \"{accept}\", expected \"{expectedAccept}\")");
     }
 
+    public void Send(WebSocketMessage message)
+    {
+        if (State != WebSocketState.Open)
+            throw new Exception("WebSocket is not open");
+
+        var frame = message.ToFrame();
+        var fragments = frame.ToFragments();
+
+        var s = _httpHandler.GetOrOpenStream();
+        foreach (var fragment in fragments)
+        {
+            var bytes = fragment.Serialize();
+            s.Write(bytes, 0, bytes.Length);
+        }
+    }
+
 #if SUPPORTS_ASYNC
     public async Task ConnectAsync()
     {
@@ -99,6 +116,22 @@ public class WebSocket
         var resp = await _httpHandler.SendRequestWithHeadersAsync(headers);
 
         ValidateResponse(resp, headers["Sec-WebSocket-Key"]);
+    }
+    
+    public async Task SendAsync(WebSocketMessage message)
+    {
+        if (State != WebSocketState.Open)
+            throw new Exception("WebSocket is not open");
+
+        var frame = message.ToFrame();
+        var fragments = frame.ToFragments();
+
+        var s = await _httpHandler.GetOrOpenStreamAsync();
+        foreach (var fragment in fragments)
+        {
+            var bytes = fragment.Serialize();
+            await s.WriteAsync(bytes, 0, bytes.Length);
+        }
     }
 #endif
 }
