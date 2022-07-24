@@ -3,37 +3,58 @@ using System.Net.WebSockets;
 
 namespace SocketWrenchSharp.Tests;
 
-public static class TestUtils
+internal static class TestUtils
 {
-    public static Thread SpinUpSocketServerAndWaitForConnect(Action<WebSocketContext, HttpListener> onConnect)
+    
+    internal static async Task<(WebSocketContext?, HttpListener)> SpinUpSocketServerAndWaitForConnect()
     {
-        // ReSharper disable once AsyncVoidLambda
-        var t = new Thread(() =>
+        Console.WriteLine("Starting test server...");
+        var httpListener = new HttpListener();
+        try
         {
-            // Console.WriteLine("Starting HTTP listener");
-            var httpListener = new HttpListener();
             httpListener.Prefixes.Add("http://127.0.0.1:60606/");
             httpListener.Start();
-
-            // Console.WriteLine("Waiting for WS connection");
-            var context = httpListener.GetContextAsync().Result;
-            if (context.Request.IsWebSocketRequest)
-            {
-                // Console.WriteLine("Got WS connection");
-                var webSocketContext = context.AcceptWebSocketAsync(null!).Result;
-
-                onConnect(webSocketContext, httpListener);
-
-                // Console.WriteLine("Thread terminating.");
-            }
-        })
+        }
+        catch (Exception e)
         {
-            Name = "Test socket server thread",
-            IsBackground = true,
-        };
+            Console.WriteLine("Failed to start test server: " + e.Message);
+            return (null, httpListener);
+        }
 
-        t.Start();
+        Console.WriteLine("Server is running.");
 
-        return t;
+        var context = await httpListener.GetContextAsync();
+        if (context.Request.IsWebSocketRequest)
+        {
+            return (await context.AcceptWebSocketAsync(null), httpListener);
+        }
+
+        return (null, httpListener);
+    }
+
+    internal static async Task<ReceivedWebsocketPacket> StartServerAndWaitForFirstWsMessage(int length)
+    {
+        var (webSocketContext, httpListener) = await Task.Run(SpinUpSocketServerAndWaitForConnect);
+
+        var ws = webSocketContext!.WebSocket;
+
+        var ret = new byte[length];
+        var result = await ws.ReceiveAsync(new(ret), CancellationToken.None);
+        
+        httpListener.Stop();
+
+        return new(result, ret);
+    }
+
+    internal struct ReceivedWebsocketPacket
+    {
+        public WebSocketReceiveResult Result;
+        public byte[] Buffer;
+
+        public ReceivedWebsocketPacket(WebSocketReceiveResult result, byte[] buffer)
+        {
+            Result = result;
+            Buffer = buffer;
+        }
     }
 }

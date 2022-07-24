@@ -43,6 +43,7 @@ public class WebSocketFragment
     {
         IsFinal = final;
         Opcode = opcode;
+        // _rawPayload = payload;
         _rawPayload = (byte[])payload.Clone(); //Clone to avoid modifying the original array
         
         ComputeOutgoingLength();
