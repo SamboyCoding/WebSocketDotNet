@@ -1,4 +1,5 @@
 ﻿using SocketWrenchSharp.Protocol;
+using SocketWrenchSharp.Utils;
 
 namespace SocketWrenchSharp.Messages;
 
@@ -17,7 +18,12 @@ public class WebSocketPongMessage : WebSocketMessage
         PongPayload = pongPayload;
     }
 
-    public override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Pong;
-    public override void ReadData(byte[] payload) => PongPayload = payload;
-    public override byte[] GetPayload() => PongPayload;
+    internal WebSocketPongMessage()
+    {
+        PongPayload = MiscUtils.EmptyArray<byte>();
+    }
+
+    protected override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Pong;
+    protected override void ReadData(byte[] payload) => PongPayload = payload;
+    protected override byte[] GetPayload() => PongPayload;
 }

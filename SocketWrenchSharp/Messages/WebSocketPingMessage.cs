@@ -30,8 +30,8 @@ public class WebSocketPingMessage : WebSocketMessage
         
         PingPayload = payload;
     }
-    
-    public override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Ping;
-    public override void ReadData(byte[] payload) => PingPayload = payload;
-    public override byte[] GetPayload() => PingPayload;
+
+    protected override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Ping;
+    protected override void ReadData(byte[] payload) => PingPayload = payload;
+    protected override byte[] GetPayload() => PingPayload;
 }

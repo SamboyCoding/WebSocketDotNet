@@ -43,12 +43,12 @@ public class MakeConsoleWork : IDisposable
             Output.WriteLine(new(buffer, index, count));
         }
         
-        public override void Write(string value)
+        public override void Write(string? value)
         {
             Output.WriteLine(value);
         }
         
-        public override void WriteLine(string value)
+        public override void WriteLine(string? value)
         {
             Output.WriteLine(value);
         }
@@ -68,7 +68,7 @@ public class MakeConsoleWork : IDisposable
             Output.WriteLine(value.ToString());
         }
         
-        public override void WriteLine(char[] buffer)
+        public override void WriteLine(char[]? buffer)
         {
             Output.WriteLine(new(buffer));
         }

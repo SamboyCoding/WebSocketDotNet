@@ -1,4 +1,5 @@
 ﻿using SocketWrenchSharp.Protocol;
+using SocketWrenchSharp.Utils;
 
 namespace SocketWrenchSharp.Messages;
 
@@ -14,8 +15,13 @@ public class WebSocketBinaryMessage : WebSocketMessage
     {
         Data = data;
     }
-    
-    public override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Binary;
-    public override void ReadData(byte[] payload) => Data = payload;
-    public override byte[] GetPayload() => Data;
+
+    internal WebSocketBinaryMessage()
+    {
+        Data = MiscUtils.EmptyArray<byte>();
+    }
+
+    protected override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Binary;
+    protected override void ReadData(byte[] payload) => Data = payload;
+    protected override byte[] GetPayload() => Data;
 }

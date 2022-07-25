@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using SocketWrenchSharp.Http;
+using SocketWrenchSharp.Protocol;
 
 #if SUPPORTS_ASYNC
 using System.Threading.Tasks;
@@ -32,12 +33,15 @@ internal static class Extensions
         => s.Write(bytes, 0, bytes.Length);
 
     internal static bool Bit(this byte b, int bit) => (b & (1 << bit)) != 0;
-    
+
     internal static byte Bits(this byte b, int start, int end)
     {
         var mask = 0xFF >> (8 - (end - start + 1));
         return (byte)((b >> start) & mask);
     }
+
+    public static bool IsControlOpcode(this WebSocketOpcode opcode) 
+        => opcode is WebSocketOpcode.Close or WebSocketOpcode.Ping or WebSocketOpcode.Pong;
 
 #if SUPPORTS_ASYNC
     internal static async Task WriteAsync(this Stream s, byte[] bytes)

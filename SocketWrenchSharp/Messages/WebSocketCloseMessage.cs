@@ -22,9 +22,14 @@ public class WebSocketCloseMessage : WebSocketMessage
         CloseReasonText = closeReasonText;
     }
 
-    public override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Close;
+    internal WebSocketCloseMessage()
+    {
+        CloseReason = WebSocketCloseCode.NoStatus;
+    }
 
-    public override void ReadData(byte[] payload)
+    protected override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Close;
+
+    protected override void ReadData(byte[] payload)
     {
         if (payload.Length == 0)
             return;
@@ -38,7 +43,7 @@ public class WebSocketCloseMessage : WebSocketMessage
             CloseReasonText = Encoding.UTF8.GetString(payload, 2, payload.Length - 2);
     }
 
-    public override byte[] GetPayload()
+    protected override byte[] GetPayload()
     {
         if (CloseReasonText == null)
             return CloseReason == WebSocketCloseCode.Unspecified

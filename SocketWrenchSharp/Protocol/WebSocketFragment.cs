@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using SocketWrenchSharp.Utils;
+
+#if SUPPORTS_ASYNC
+using System.Threading.Tasks;
+#endif
 
 namespace SocketWrenchSharp.Protocol;
 
@@ -165,15 +168,7 @@ public class WebSocketFragment
             throw new IOException("Failed to read 2-byte header from stream");
         
         //Read initial data
-        var ret = new WebSocketFragment
-        {
-            IsFinal = buf[0].Bit(7),
-            Reserved1 = buf[0].Bit(6),
-            Reserved2 = buf[0].Bit(5),
-            Reserved3 = buf[0].Bit(4),
-            Opcode = (WebSocketOpcode)buf[0].Bits(0, 3),
-            IsMasked = buf[1].Bit(7),
-        };
+        var ret = ParseTwoByteHeader(buf);
         
         //Length handling
         ret.ReadLength(buf, from);
@@ -198,6 +193,17 @@ public class WebSocketFragment
         
         return ret;
     }
+
+    private static WebSocketFragment ParseTwoByteHeader(byte[] buf) =>
+        new()
+        {
+            IsFinal = buf[0].Bit(7),
+            Reserved1 = buf[0].Bit(6),
+            Reserved2 = buf[0].Bit(5),
+            Reserved3 = buf[0].Bit(4),
+            Opcode = (WebSocketOpcode)buf[0].Bits(0, 3),
+            IsMasked = buf[1].Bit(7),
+        };
 
     public byte[] Serialize()
     {
@@ -257,4 +263,84 @@ public class WebSocketFragment
         //Right to left: 7 bit payload length, 1 bit mask flag
         toWrite[1] = (byte)(_shortPayloadLength | (byte)(IsMasked ? 0x80 : 0));
     }
+    
+    #if SUPPORTS_ASYNC
+    
+    /// <summary>
+    /// Handles reading the payload length for this fragment. If the initial 7-byte length in the frame is less than 126, it is stored in _shortPayloadLength.
+    /// Otherwise extra bytes are read from the stream and stored in _extendedPayloadLength.
+    /// </summary>
+    /// <param name="initialHeader">The initial 2-byte header of this fragment to read the short length from</param>
+    /// <param name="stream">The stream to read any extended length data from if needed</param>
+    /// <exception cref="IOException">If an error occurs when reading from the stream</exception>
+    private async Task ReadLengthAsync(byte[] initialHeader, Stream stream)
+    {
+        var shortLength = initialHeader[1].Bits(0, 6);
+        if (shortLength == ShortLengthExtended16Bit)
+        {
+            //We don't need to access the existing buffered data so we can re-use it for the 16-bit length
+            if (await stream.ReadAsync(initialHeader, 0, 2) != 2)
+                throw new IOException("Failed to read 2-byte extended length from stream");
+            
+            //Swap bytes - network order is big-endian, BitConverter is little-endian
+            //This is more optimised than Array.Reverse for a single swap
+            (initialHeader[0], initialHeader[1]) = (initialHeader[1], initialHeader[0]);
+            
+            _extendedPayloadLength = BitConverter.ToUInt16(initialHeader, 0);
+        } else if (shortLength == ShortLengthExtended64Bit)
+        {
+            //Need an 8-byte buffer
+            initialHeader = new byte[8];
+            if (await stream.ReadAsync(initialHeader, 0, 8) != 8)
+                throw new IOException("Failed to read 8-byte extended length from stream");
+            
+            //Swap bytes - network order is big-endian, BitConverter is little-endian
+            Array.Reverse(initialHeader);
+            
+            _extendedPayloadLength = BitConverter.ToUInt64(initialHeader, 0);
+            
+            if(_extendedPayloadLength >> 63 != 0)
+                throw new IOException("64-bit extended payload length has most significant bit set, which is not allowed");
+        }
+        else
+        {
+            _shortPayloadLength = shortLength;
+            _extendedPayloadLength = ulong.MaxValue;
+        }
+    }
+    
+    public static async Task<WebSocketFragment> ReadAsync(Stream from)
+    {
+        var buf = new byte[2];
+        if (await from.ReadAsync(buf, 0, 2) != 2)
+            throw new IOException("Failed to read 2-byte header from stream");
+        
+        //Read initial data
+        var ret = ParseTwoByteHeader(buf);
+        
+        //Length handling
+        await ret.ReadLengthAsync(buf, from);
+
+        //Mask handling
+        if (ret.IsMasked)
+        {
+            if (await from.ReadAsync(ret.Mask, 0, 4) != 4)
+                throw new IOException("Failed to read 4-byte mask from stream");
+        }
+        
+        //Read length of payload
+        if(ret.PayloadLength > int.MaxValue)
+            throw new IOException($"Cannot read >2GiB payload (length in header was {ret.PayloadLength} bytes)");
+        
+        ret._rawPayload = new byte[(int)ret.PayloadLength];
+        if (await from.ReadAsync(ret._rawPayload, 0, (int)ret.PayloadLength) != (int)ret.PayloadLength)
+            throw new IOException("Failed to read payload from stream");
+        
+        if(ret.IsMasked)
+            ret.UnmaskPayload();
+        
+        return ret;
+    }
+    
+    #endif
 }

@@ -17,6 +17,8 @@ public class HttpHandler
 
     public Stream GetOrOpenStream()
         => _stream ??= _underlyingClient.GetStream();
+    
+    public bool AnyDataAvailable => _underlyingClient.AnythingToRead;
 
     public void CloseAnyExistingStream()
     {

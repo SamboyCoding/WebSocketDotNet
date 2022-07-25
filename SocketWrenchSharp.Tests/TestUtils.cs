@@ -26,13 +26,14 @@ internal static class TestUtils
         var context = await httpListener.GetContextAsync();
         if (context.Request.IsWebSocketRequest)
         {
-            return (await context.AcceptWebSocketAsync(null), httpListener);
+            Console.WriteLine("Server: Got WebSocket request.");
+            return (await context.AcceptWebSocketAsync(null!), httpListener);
         }
 
         return (null, httpListener);
     }
 
-    internal static async Task<ReceivedWebsocketPacket> StartServerAndWaitForFirstWsMessage(int length)
+    internal static async Task<(ReceivedWebsocketPacket, HttpListener)> StartServerAndWaitForFirstWsMessage(int length)
     {
         var (webSocketContext, httpListener) = await SpinUpSocketServerAndWaitForConnect();
 
@@ -40,10 +41,47 @@ internal static class TestUtils
 
         var ret = new byte[length];
         var result = await ws.ReceiveAsync(new(ret), CancellationToken.None);
-        
-        httpListener.Stop();
 
-        return new(result, ret);
+        return (new(result, ret), httpListener);
+    }
+
+    internal static Task<byte[]> WaitForBinaryMessage(this WebSocket socket)
+    {
+        var tcs = new TaskCompletionSource<byte[]>();
+
+        void CloseHandler(WebSocketCloseCode code, string? reason)
+        {
+            Console.WriteLine($"Socket closed: {code} {reason}");
+            tcs.SetException(new Exception($"WebSocket closed with code {code}: {reason}"));
+        }
+
+        void DataHandler(byte[] data)
+        {
+            tcs.SetResult(data);
+            socket.BinaryReceived -= DataHandler;
+            socket.Closed -= CloseHandler;
+        }
+
+        socket.BinaryReceived += DataHandler;
+        socket.Closing += CloseHandler;
+        
+        return tcs.Task;
+    }
+    
+    internal static Task<(WebSocketCloseCode, string?)> WaitForClose(this WebSocket socket)
+    {
+        var tcs = new TaskCompletionSource<(WebSocketCloseCode, string?)>();
+
+        void CloseHandler(WebSocketCloseCode code, string? reason)
+        {
+            Console.WriteLine($"Socket closed: {code} {reason}");
+            tcs.SetResult((code, reason));
+            socket.Closed -= CloseHandler;
+        }
+        
+        socket.Closed += CloseHandler;
+        
+        return tcs.Task;
     }
 
     internal struct ReceivedWebsocketPacket

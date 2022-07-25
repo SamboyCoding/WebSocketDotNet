@@ -4,6 +4,7 @@ using Xunit.Abstractions;
 
 namespace SocketWrenchSharp.Tests;
 
+[Collection(nameof(WebSocketTestCollection))]
 public class BasicTests : MakeConsoleWork
 {
     public BasicTests(ITestOutputHelper output) : base(output)
@@ -13,7 +14,6 @@ public class BasicTests : MakeConsoleWork
     [Fact]
     public async void WebsocketCanConnect()
     {
-        //Wrap in task.run to run in bg thread
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         
         var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
@@ -26,6 +26,8 @@ public class BasicTests : MakeConsoleWork
         Assert.NotNull(context?.WebSocket);
 
         listener.Stop();
+        
+        // Thread.Sleep(500);
     }
     
     [Fact]
@@ -41,7 +43,11 @@ public class BasicTests : MakeConsoleWork
 
         Assert.NotNull(context?.WebSocket);
         
+        Output.WriteLine("Stopping listener...");
         listener.Stop();
+        Output.WriteLine("Listener stopped");
+        
+        // Thread.Sleep(500);
     }
 
     [Fact]
@@ -56,16 +62,26 @@ public class BasicTests : MakeConsoleWork
 
         var clientSocket = new WebSocket("http://localhost:60606/", false);
         
+        Output.WriteLine("Client: Connecting...");
         //Again, specifically do NOT want the async version here
         clientSocket.Connect();
+        
+        Output.WriteLine("Client: Sending...");
         clientSocket.Send(new WebSocketBinaryMessage(binaryData));
 
-        var received = await task;
+        Output.WriteLine("Server: Waiting for data...");
+        var (received, listener) = await task;
         
         Output.WriteLine($"Received {received.Buffer.Length} bytes: [{string.Join(", ", received.Buffer)}]");
         
         Assert.Equal(WebSocketMessageType.Binary, received.Result.MessageType);
         Assert.Equal(binaryData, received.Buffer);
+        
+        Output.WriteLine("Stopping listener...");
+        listener.Stop();
+        Output.WriteLine("Listener stopped");
+        
+        // Thread.Sleep(500);
     } 
     
     [Fact]
@@ -79,14 +95,25 @@ public class BasicTests : MakeConsoleWork
         var task = TestUtils.StartServerAndWaitForFirstWsMessage(16);
 
         var clientSocket = new WebSocket("http://localhost:60606/", false);
+        Output.WriteLine("Client: Connecting...");
+        //Again, specifically do NOT want the async version here
         await clientSocket.ConnectAsync();
+        
+        Output.WriteLine("Client: Sending...");
         await clientSocket.SendAsync(new WebSocketBinaryMessage(binaryData));
 
-        var received = await task;
+        Output.WriteLine("Server: Waiting for data...");
+        var (received, listener) = await task;
         
         Output.WriteLine($"Received {received.Buffer.Length} bytes: [{string.Join(", ", received.Buffer)}]");
         
         Assert.Equal(WebSocketMessageType.Binary, received.Result.MessageType);
         Assert.Equal(binaryData, received.Buffer);
+        
+        Output.WriteLine("Stopping listener...");
+        listener.Stop();
+        Output.WriteLine("Listener stopped");
+        
+        // Thread.Sleep(500);
     } 
 }

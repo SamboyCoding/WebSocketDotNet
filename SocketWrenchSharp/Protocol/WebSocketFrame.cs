@@ -53,4 +53,20 @@ public class WebSocketFrame
 
         return fragments;
     }
+    
+    internal static WebSocketFrame FromFragments(List<WebSocketFragment> fragments)
+    {
+        var payload = new List<byte>();
+        foreach (var fragment in fragments)
+        {
+            payload.AddRange(fragment.Payload);
+        }
+
+        return new WebSocketFrame(fragments[0].Opcode, payload.ToArray());
+    }
+    
+    internal static WebSocketFrame FromFragment(WebSocketFragment fragment)
+    {
+        return new WebSocketFrame(fragment.Opcode, fragment.Payload);
+    }
 }

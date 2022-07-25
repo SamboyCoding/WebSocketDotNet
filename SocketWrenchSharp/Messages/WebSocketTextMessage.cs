@@ -16,7 +16,12 @@ public class WebSocketTextMessage : WebSocketMessage
         Text = text;
     }
 
-    public override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Text;
-    public override void ReadData(byte[] payload) => Text = Encoding.UTF8.GetString(payload);
-    public override byte[] GetPayload() => Encoding.UTF8.GetBytes(Text);
+    internal WebSocketTextMessage()
+    {
+        Text = "Incoming message not decoded yet.";
+    }
+
+    protected override WebSocketOpcode OpcodeToSend => WebSocketOpcode.Text;
+    protected override void ReadData(byte[] payload) => Text = Encoding.UTF8.GetString(payload);
+    protected override byte[] GetPayload() => Encoding.UTF8.GetBytes(Text);
 }

@@ -11,6 +11,9 @@ public class RawTcpNetworkStreamProvider : NetworkStreamProvider
 {
     private TcpClient _client;
     private NetworkStream? _lastStream;
+    
+    public override bool AnythingToRead => _lastStream?.DataAvailable ?? false;
+    public virtual bool IsClosed => false;
 
     public RawTcpNetworkStreamProvider(string host, int port) : base(host, port)
     {
@@ -32,6 +35,4 @@ public class RawTcpNetworkStreamProvider : NetworkStreamProvider
         return _lastStream = _client.GetStream();
     }
 #endif
-
-    public override bool AnythingToRead => _lastStream?.DataAvailable ?? false;
 }
