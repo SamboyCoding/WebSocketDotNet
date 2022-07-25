@@ -27,7 +27,7 @@ jobs:
                 uses: coverallsapp/github-action@1.1.3
                 with:
                     github-token: ${{ secrets.GITHUB_TOKEN }}
-                    path-to-lcov: ./WebSocketDotNet.Tests/lcov.info
+                    path-to-lcov: ./WebSocketDotNet.Tests/lcov.net48.info
             -   name: Build
                 run: dotnet build -c Release
             -   name: Upload NuGet Artifact
