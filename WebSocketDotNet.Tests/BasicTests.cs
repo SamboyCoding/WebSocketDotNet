@@ -61,7 +61,7 @@ public class BasicTests : MakeConsoleWork
 
         var task = TestUtils.StartServerAndWaitForFirstWsMessage(16);
 
-        var clientSocket = new SocketWrenchSharp.WebSocket("http://localhost:60606/", false);
+        var clientSocket = new SocketWrenchSharp.WebSocket("http://127.0.0.1:60606/", false);
         
         Output.WriteLine("Client: Connecting...");
         //Again, specifically do NOT want the async version here
@@ -95,7 +95,7 @@ public class BasicTests : MakeConsoleWork
 
         var task = TestUtils.StartServerAndWaitForFirstWsMessage(16);
 
-        var clientSocket = new WebSocket("http://localhost:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
         Output.WriteLine("Client: Connecting...");
         //Again, specifically do NOT want the async version here
         await clientSocket.ConnectAsync();
