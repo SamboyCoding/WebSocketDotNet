@@ -189,6 +189,19 @@ public class WebSocket
         {
             Send(_closeMessage);
         }
+        catch (IOException e)
+        {
+            if (e.InnerException is SocketException { SocketErrorCode: SocketError.ConnectionReset })
+            {
+                _closeMessage = null;
+                OnClose();
+                return;
+            }
+
+            var wrapped = new IOException("Error sending close message", e);
+            _closeMessage = new(WebSocketCloseCode.InternalError, wrapped.ToString());
+            OnClose();
+        }
         catch (Exception e)
         {
             //Just close immediately if we can't send the close message
