@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketWrenchSharp", "SocketWrenchSharp\SocketWrenchSharp.csproj", "{322D7F68-F94E-4C01-972D-F02F89422A1B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketDotNet", "WebSocketDotNet\WebSocketDotNet.csproj", "{322D7F68-F94E-4C01-972D-F02F89422A1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketWrenchSharp.Tests", "SocketWrenchSharp.Tests\SocketWrenchSharp.Tests.csproj", "{234F046C-4B91-47D9-9C2C-E5CE9A2CDECD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketDotNet.Tests", "WebSocketDotNet.Tests\WebSocketDotNet.Tests.csproj", "{234F046C-4B91-47D9-9C2C-E5CE9A2CDECD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{817EBC99-7172-4E2F-9487-F06168D0E67D}"
 	ProjectSection(SolutionItems) = preProject

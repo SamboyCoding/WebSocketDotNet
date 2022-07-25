@@ -3,7 +3,7 @@ using System.Text;
 using SocketWrenchSharp.Utils;
 using Xunit.Abstractions;
 
-namespace SocketWrenchSharp.Tests;
+namespace WebSocketDotNet.Tests;
 
 public class MakeConsoleWork : IDisposable
 {

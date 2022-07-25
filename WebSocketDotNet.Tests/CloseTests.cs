@@ -1,7 +1,9 @@
 ﻿using System.Net.WebSockets;
+using SocketWrenchSharp;
 using Xunit.Abstractions;
+using WebSocket = SocketWrenchSharp.WebSocket;
 
-namespace SocketWrenchSharp.Tests;
+namespace WebSocketDotNet.Tests;
 
 [Collection(nameof(WebSocketTestCollection))]
 public class CloseTests : MakeConsoleWork

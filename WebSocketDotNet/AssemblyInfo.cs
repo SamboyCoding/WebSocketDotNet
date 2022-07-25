@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("SocketWrenchSharp.Tests")]
+[assembly:InternalsVisibleTo("WebSocketDotNet.Tests")]
 
 namespace SocketWrenchSharp;
 

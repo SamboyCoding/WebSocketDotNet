@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SocketWrenchSharp\SocketWrenchSharp.csproj" />
+      <ProjectReference Include="..\WebSocketDotNet\WebSocketDotNet.csproj" />
     </ItemGroup>
 
 </Project>
