@@ -2,7 +2,7 @@
 
 namespace WebSocketDotNet.Utils;
 
-public static class MiscUtils
+internal static class MiscUtils
 {
     public static T[] EmptyArray<T>()
     {

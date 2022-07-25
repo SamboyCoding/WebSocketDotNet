@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace WebSocketDotNet.Protocol;
 
-public class WebSocketFragment
+internal class WebSocketFragment
 {
-    public const byte MaxSingleFragmentPayloadSize = 125;
+    private const byte MaxSingleFragmentPayloadSize = 125;
     private const byte ShortLengthExtended16Bit = 126;
     private const byte ShortLengthExtended64Bit = 127;
 

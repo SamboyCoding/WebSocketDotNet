@@ -6,10 +6,10 @@ namespace WebSocketDotNet.Protocol;
 /// <summary>
 /// A WebSocketFrame is made up of one or more WebSocketFraments. It contains an opcode and a payload.
 /// </summary>
-public class WebSocketFrame
+internal class WebSocketFrame
 {
     //Generally speaking, let's try not to use the 64-bit length field.
-    public const int MaxFragmentSize = 0xFFFF;
+    private const int MaxFragmentSize = 0xFFFF;
 
     public WebSocketOpcode Opcode { get; set; }
     public byte[] Payload { get; set; }

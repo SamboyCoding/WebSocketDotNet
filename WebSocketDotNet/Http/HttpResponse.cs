@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WebSocketDotNet.Http;
 
-public class HttpResponse
+internal class HttpResponse
 {
     public HttpStatusCode StatusCode { get; }
     public string StatusDescription { get; }

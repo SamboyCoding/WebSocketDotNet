@@ -180,12 +180,22 @@ public class WebSocket
 
         if (code == WebSocketCloseCode.Reserved)
             throw new ArgumentException("Cannot use reserved close codes", nameof(code));
-
-        _closeMessage = new(code, reason);
-        Send(_closeMessage);
+        
         State = WebSocketState.Closing;
-
+        _closeMessage = new(code, reason);
         Closing(code, reason);
+
+        try
+        {
+            Send(_closeMessage);
+        }
+        catch (Exception e)
+        {
+            //Just close immediately if we can't send the close message
+            var wrapped = new IOException("Error sending close message", e);
+            _closeMessage = new(WebSocketCloseCode.InternalError, wrapped.ToString());
+            OnClose();
+        }
     }
 
     /// <summary>

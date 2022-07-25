@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WebSocketDotNet.Http;
 
-public abstract class NetworkStreamProvider
+internal abstract class NetworkStreamProvider
 {
     private const int WaitIntervalMs = 10;
 

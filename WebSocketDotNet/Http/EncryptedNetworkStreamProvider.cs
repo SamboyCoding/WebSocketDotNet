@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebSocketDotNet.Http;
 
-public class EncryptedNetworkStreamProvider : RawTcpNetworkStreamProvider
+internal class EncryptedNetworkStreamProvider : RawTcpNetworkStreamProvider
 {
     public EncryptedNetworkStreamProvider(string host, int port) : base(host, port)
     {

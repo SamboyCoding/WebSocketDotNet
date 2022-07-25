@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace WebSocketDotNet.Http;
 
-public class HttpHandler
+internal class HttpHandler
 {
     private Uri _uri;
     private NetworkStreamProvider _underlyingClient;

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebSocketDotNet.Http;
 
-public class RawTcpNetworkStreamProvider : NetworkStreamProvider
+internal class RawTcpNetworkStreamProvider : NetworkStreamProvider
 {
     private TcpClient _client;
     private NetworkStream? _lastStream;

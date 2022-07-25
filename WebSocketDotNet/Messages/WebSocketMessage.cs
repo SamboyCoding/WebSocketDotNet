@@ -11,9 +11,9 @@ public abstract class WebSocketMessage
 
     protected abstract byte[] GetPayload();
 
-    public WebSocketFrame ToFrame() => new(OpcodeToSend, GetPayload());
+    internal WebSocketFrame ToFrame() => new(OpcodeToSend, GetPayload());
 
-    public static WebSocketMessage FromFrame(WebSocketFrame frame)
+    internal static WebSocketMessage FromFrame(WebSocketFrame frame)
     {
         WebSocketMessage message;
         switch (frame.Opcode)

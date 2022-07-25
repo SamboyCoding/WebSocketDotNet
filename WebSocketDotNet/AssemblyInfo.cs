@@ -6,8 +6,8 @@ using System.Runtime.CompilerServices;
 
 namespace WebSocketDotNet;
 
-public class AssemblyInfo
+internal static class AssemblyInfo
 {
-    public static string Name = Assembly.GetExecutingAssembly().GetName().Name!;
-    public static Version Version = Assembly.GetExecutingAssembly().GetName().Version!;
+    public static readonly string Name = Assembly.GetExecutingAssembly().GetName().Name!;
+    public static readonly Version Version = Assembly.GetExecutingAssembly().GetName().Version!;
 }
