@@ -17,11 +17,17 @@ internal class RawTcpNetworkStreamProvider : NetworkStreamProvider
 
     public RawTcpNetworkStreamProvider(string host, int port) : base(host, port)
     {
-        _client = new TcpClient();
+        _client = new();
     }
 
     public override Stream GetStream()
     {
+        if (_client.Connected)
+        {
+            _client.Close();
+            _client = new();
+        }
+
         _client.Connect(Host, Port);
 
         return _lastStream = _client.GetStream();

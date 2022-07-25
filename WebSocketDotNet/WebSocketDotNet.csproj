@@ -24,7 +24,7 @@
         <RepositoryUrl>https://github.com/SamboyCoding/WebSocketDotNet.git</RepositoryUrl>
         <TargetFrameworks>netstandard2.0;netstandard2.1;net3.5;net4.5;net6.0</TargetFrameworks>
         <Title>WebSocket.NET</Title>
-        <Version>0.5.3</Version>
+        <Version>0.5.4</Version>
 
         <DefineConstants Condition="'$(TargetFramework)' != 'net3.5'">SUPPORTS_ASYNC,SUPPORTS_SPAN</DefineConstants>
 
