@@ -75,7 +75,16 @@ public class WebSocket
         if (State != WebSocketState.Closed)
             throw new InvalidOperationException("Cannot connect while in state " + State);
 
-        SendHandshakeRequest();
+        try
+        {
+            SendHandshakeRequest();
+        } catch (Exception e)
+        {
+            OnException(e);
+
+            //Rethrow connection errors.
+            throw;
+        }
 
         OnOpen();
     }
@@ -176,7 +185,17 @@ public class WebSocket
         }
 
         if (State == WebSocketState.Connecting)
+        {
+            if (code is WebSocketCloseCode.ProtocolError or WebSocketCloseCode.InternalError)
+            {
+                Closing(code, reason);
+                _closeMessage = new(code, reason);
+                OnClose();
+                return;
+            }
+
             throw new InvalidOperationException("Cannot send close message while connecting");
+        }
 
         if (code == WebSocketCloseCode.Reserved)
             throw new ArgumentException("Cannot use reserved close codes", nameof(code));
@@ -189,25 +208,9 @@ public class WebSocket
         {
             Send(_closeMessage);
         }
-        catch (IOException e)
-        {
-            if (e.InnerException is SocketException { SocketErrorCode: SocketError.ConnectionReset })
-            {
-                _closeMessage = null;
-                OnClose();
-                return;
-            }
-
-            var wrapped = new IOException("Error sending close message", e);
-            _closeMessage = new(WebSocketCloseCode.InternalError, wrapped.ToString());
-            OnClose();
-        }
         catch (Exception e)
         {
-            //Just close immediately if we can't send the close message
-            var wrapped = new IOException("Error sending close message", e);
-            _closeMessage = new(WebSocketCloseCode.InternalError, wrapped.ToString());
-            OnClose();
+            OnException(e);
         }
     }
 
@@ -235,24 +238,9 @@ public class WebSocket
 
                 receivedFragments.Add(fragment);
             }
-            catch (WebSocketProtocolException e)
-            {
-                SendClose(WebSocketCloseCode.ProtocolError, e.Message);
-            }
-            catch (IOException ioe)
-            {
-                if (State == WebSocketState.Closing)
-                {
-                    //This io exception probably means the server closed the connection, so we'll just treat it as a normal close
-                    OnClose();
-                    return;
-                }
-
-                SendClose(WebSocketCloseCode.InternalError, ioe.Message);
-            }
             catch (Exception e)
             {
-                SendClose(WebSocketCloseCode.InternalError, e.Message);
+                OnException(e);
             }
         } while (_httpHandler.AnyDataAvailable);
 
@@ -266,9 +254,9 @@ public class WebSocket
         {
             receivedFragments.ForEach(ProcessFragment);
         }
-        catch (WebSocketProtocolException e)
+        catch (Exception e)
         {
-            SendClose(WebSocketCloseCode.ProtocolError, e.Message);
+            OnException(e);
         }
     }
 
@@ -280,22 +268,9 @@ public class WebSocket
             {
                 ReceiveAllAvailable();
             }
-            catch (IOException e)
-            {
-                if (e.InnerException is SocketException se)
-                {
-                    if (se.SocketErrorCode == SocketError.ConnectionReset)
-                    {
-                        OnClose();
-                        continue;
-                    }
-                }
-
-                SendClose(WebSocketCloseCode.InternalError, e.Message);
-            }
             catch (Exception e)
             {
-                SendClose(WebSocketCloseCode.InternalError, e.Message);
+                OnException(e);
             }
 
             Thread.Sleep(10);
@@ -439,6 +414,64 @@ public class WebSocket
         }
     }
 
+    private void OnException(Exception e)
+    {
+        if (e is WebSocketProtocolException pe)
+        {
+            SendClose(WebSocketCloseCode.ProtocolError, pe.Message);
+            return;
+        }
+        
+        if (e is IOException ioe)
+        {
+            if (ioe.InnerException is SocketException se2)
+            {
+                e = se2;
+            }
+            else
+            {
+                if (State == WebSocketState.Closing)
+                {
+                    //We already sent a close, close connection
+                    OnClose();
+                    return;
+                }
+            }
+        }
+
+        if (e is SocketException se)
+        {
+            if (se.SocketErrorCode == SocketError.ConnectionReset)
+            {
+                if (State == WebSocketState.Closing)
+                {
+                    //Connection reset while closing -> closed.
+                    _closeMessage = new(WebSocketCloseCode.ClosedOk, "Websocket closed");
+                    State = WebSocketState.Closing;
+                    OnClose();
+                }
+                else
+                {
+                    //Connection reset while open -> closed abnormally.
+                    OnClose();
+                }
+
+                return;
+            }
+
+            if (se.SocketErrorCode == SocketError.ConnectionRefused)
+            {
+                _closeMessage = new(WebSocketCloseCode.ProtocolError, "Connection refused");
+                State = WebSocketState.Closing;
+                    
+                OnClose();
+                return;
+            }
+        }
+        
+        SendClose(WebSocketCloseCode.InternalError, e.Message);
+    }
+
 #if SUPPORTS_ASYNC
     /// <summary>
     /// Send a message to the server asynchronously. This method is thread-safe.
@@ -486,24 +519,9 @@ public class WebSocket
 
                 receivedFragments.Add(fragment);
             }
-            catch (WebSocketProtocolException e)
-            {
-                SendClose(WebSocketCloseCode.ProtocolError, e.Message);
-            }
-            catch (IOException ioe)
-            {
-                if (State == WebSocketState.Closing)
-                {
-                    //This io exception probably means the server closed the connection, so we'll just treat it as a normal close
-                    OnClose();
-                    return;
-                }
-
-                SendClose(WebSocketCloseCode.InternalError, ioe.Message);
-            }
             catch (Exception e)
             {
-                SendClose(WebSocketCloseCode.InternalError, e.Message);
+                OnException(e);
             }
         } while (_httpHandler.AnyDataAvailable);
 
@@ -513,9 +531,9 @@ public class WebSocket
         {
             receivedFragments.ForEach(ProcessFragment);
         }
-        catch (WebSocketProtocolException e)
+        catch (Exception e)
         {
-            SendClose(WebSocketCloseCode.ProtocolError, e.Message);
+            OnException(e);
         }
     }
 
@@ -524,7 +542,17 @@ public class WebSocket
     /// </summary>
     public async Task ConnectAsync()
     {
-        await SendHandshakeRequestAsync();
+        try
+        {
+            await SendHandshakeRequestAsync();
+        }
+        catch (Exception e)
+        {
+            OnException(e);
+
+            //Rethrow connection errors
+            throw;
+        }
 
         OnOpen();
     }

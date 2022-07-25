@@ -81,6 +81,7 @@ public class CloseTests : MakeConsoleWork
         
         Assert.Equal(WebSocketCloseCode.AbnormalClosure, code);
         Assert.Equal("Unexpected close", reason);
+        Assert.Equal(WebSocketState.Closed, clientSocket.State);
         
         listener.Close();
     }
