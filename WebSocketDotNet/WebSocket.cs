@@ -26,8 +26,14 @@ public class WebSocket
     private readonly HttpHandler _httpHandler;
     private readonly List<WebSocketFragment> _currentPartialFragments = new();
     private readonly bool _useReceiveThread;
+
+#if SUPPORTS_ASYNC
+    private readonly SemaphoreSlim _sendLock = new(1, 1);
+    private readonly SemaphoreSlim _receiveLock = new(1, 1);
+#else
     private readonly object _sendLock = new();
     private readonly object _receiveLock = new();
+#endif
 
     private Thread? _receiveThread;
     private WebSocketCloseMessage? _closeMessage;
@@ -130,7 +136,11 @@ public class WebSocket
 
         var s = _httpHandler.GetOrOpenStream();
 
+#if SUPPORTS_ASYNC
+        _sendLock.Wait();
+#else
         Monitor.Enter(_sendLock);
+#endif
 
         foreach (var fragment in fragments)
         {
@@ -138,8 +148,11 @@ public class WebSocket
             s.Write(bytes);
         }
 
-
+#if SUPPORTS_ASYNC
+        _sendLock.Release();
+#else
         Monitor.Exit(_sendLock);
+#endif
     }
 
     /// <summary>
@@ -184,7 +197,12 @@ public class WebSocket
             return;
 
         List<WebSocketFragment> receivedFragments = new();
+
+#if SUPPORTS_ASYNC
+        _receiveLock.Wait();
+#else
         Monitor.Enter(_receiveLock);
+#endif
 
         do
         {
@@ -215,7 +233,11 @@ public class WebSocket
             }
         } while (_httpHandler.AnyDataAvailable);
 
+#if SUPPORTS_ASYNC
+        _receiveLock.Release();
+#else
         Monitor.Exit(_receiveLock);
+#endif
 
         try
         {
@@ -263,8 +285,8 @@ public class WebSocket
             throw new InvalidOperationException("WebSocket is not open");
 
         // if (!_httpHandler.AnyDataAvailable)
-            //Nothing to read
-            // return null;
+        //Nothing to read
+        // return null;
 
         var s = _httpHandler.GetOrOpenStream();
         return WebSocketFragment.Read(s);
@@ -360,7 +382,7 @@ public class WebSocket
             //Unexpected close
             _closeMessage = new(WebSocketCloseCode.AbnormalClosure, "Unexpected close");
         }
-        
+
         _httpHandler.CloseAnyExistingStream();
         State = WebSocketState.Closed;
 
@@ -380,7 +402,7 @@ public class WebSocket
                 Console.WriteLine("Warning - receive thread still running!");
             _receiveThread = null;
         }
-        
+
         State = WebSocketState.Open;
 
         if (_useReceiveThread)
@@ -395,7 +417,6 @@ public class WebSocket
     }
 
 #if SUPPORTS_ASYNC
-
     /// <summary>
     /// Send a message to the server asynchronously. This method is thread-safe.
     /// </summary>
@@ -411,7 +432,7 @@ public class WebSocket
 
         var s = await _httpHandler.GetOrOpenStreamAsync();
 
-        Monitor.Enter(_sendLock);
+        await _sendLock.WaitAsync();
 
         foreach (var fragment in fragments)
         {
@@ -419,7 +440,7 @@ public class WebSocket
             await s.WriteAsync(bytes);
         }
 
-        Monitor.Exit(_sendLock);
+        _sendLock.Release();
     }
 
     /// <summary>
@@ -431,7 +452,8 @@ public class WebSocket
             return;
 
         List<WebSocketFragment> receivedFragments = new();
-        Monitor.Enter(_receiveLock);
+
+        await _receiveLock.WaitAsync();
 
         do
         {
@@ -462,7 +484,7 @@ public class WebSocket
             }
         } while (_httpHandler.AnyDataAvailable);
 
-        Monitor.Exit(_receiveLock);
+        _receiveLock.Release();
 
         try
         {
