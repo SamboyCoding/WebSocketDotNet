@@ -128,7 +128,7 @@ public class WebSocket
     /// <exception cref="InvalidOperationException">If the socket is not in the Open state.</exception>
     public void Send(WebSocketMessage message)
     {
-        if (State != WebSocketState.Open)
+        if (State is not WebSocketState.Open and not WebSocketState.Closing)
             throw new InvalidOperationException("WebSocket is not open");
 
         var frame = message.ToFrame();
@@ -434,7 +434,7 @@ public class WebSocket
     /// <exception cref="InvalidOperationException">If the socket is not in the Open state.</exception>
     public async Task SendAsync(WebSocketMessage message)
     {
-        if (State != WebSocketState.Open)
+        if (State is not WebSocketState.Open and not WebSocketState.Closing)
             throw new InvalidOperationException("WebSocket is not open");
 
         var frame = message.ToFrame();
