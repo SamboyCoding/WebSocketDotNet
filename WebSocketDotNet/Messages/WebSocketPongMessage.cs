@@ -1,7 +1,7 @@
-﻿using SocketWrenchSharp.Protocol;
-using SocketWrenchSharp.Utils;
+﻿using WebSocketDotNet.Protocol;
+using WebSocketDotNet.Utils;
 
-namespace SocketWrenchSharp.Messages;
+namespace WebSocketDotNet.Messages;
 
 /// <summary>
 /// Represents a websocket frame with the opcode 0x0A (PONG).

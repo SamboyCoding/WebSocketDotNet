@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.WebSockets;
-using SocketWrenchSharp;
 using WebSocket = System.Net.WebSockets.WebSocket;
 
 namespace WebSocketDotNet.Tests;
@@ -47,7 +46,7 @@ internal static class TestUtils
         return (new(result, ret), httpListener);
     }
 
-    internal static Task<byte[]> WaitForBinaryMessage(this SocketWrenchSharp.WebSocket socket)
+    internal static Task<byte[]> WaitForBinaryMessage(this WebSocket socket)
     {
         var tcs = new TaskCompletionSource<byte[]>();
 
@@ -70,7 +69,7 @@ internal static class TestUtils
         return tcs.Task;
     }
     
-    internal static Task<(WebSocketCloseCode, string?)> WaitForClose(this SocketWrenchSharp.WebSocket socket)
+    internal static Task<(WebSocketCloseCode, string?)> WaitForClose(this WebSocket socket)
     {
         var tcs = new TaskCompletionSource<(WebSocketCloseCode, string?)>();
 

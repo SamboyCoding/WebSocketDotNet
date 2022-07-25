@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using SocketWrenchSharp.Protocol;
+using WebSocketDotNet.Protocol;
 
-namespace SocketWrenchSharp.Messages;
+namespace WebSocketDotNet.Messages;
 
 /// <summary>
 /// Represents a websocket message with opcode 0x1 (text).

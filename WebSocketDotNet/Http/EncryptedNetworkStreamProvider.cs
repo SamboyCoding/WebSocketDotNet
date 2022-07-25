@@ -5,7 +5,7 @@ using System.Net.Security;
 using System.Threading.Tasks;
 #endif
 
-namespace SocketWrenchSharp.Http;
+namespace WebSocketDotNet.Http;
 
 public class EncryptedNetworkStreamProvider : RawTcpNetworkStreamProvider
 {

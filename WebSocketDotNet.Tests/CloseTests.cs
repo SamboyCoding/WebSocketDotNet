@@ -1,7 +1,6 @@
 ﻿using System.Net.WebSockets;
-using SocketWrenchSharp;
 using Xunit.Abstractions;
-using WebSocket = SocketWrenchSharp.WebSocket;
+using WebSocket = WebSocketDotNet.WebSocket;
 
 namespace WebSocketDotNet.Tests;
 

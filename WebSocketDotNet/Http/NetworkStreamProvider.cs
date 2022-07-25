@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 #endif
 
-namespace SocketWrenchSharp.Http;
+namespace WebSocketDotNet.Http;
 
 public abstract class NetworkStreamProvider
 {

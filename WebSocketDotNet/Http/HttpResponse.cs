@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace SocketWrenchSharp.Http;
+namespace WebSocketDotNet.Http;
 
 public class HttpResponse
 {

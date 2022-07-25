@@ -1,7 +1,7 @@
 ﻿using System;
-using SocketWrenchSharp.Protocol;
+using WebSocketDotNet.Protocol;
 
-namespace SocketWrenchSharp.Messages;
+namespace WebSocketDotNet.Messages;
 
 public abstract class WebSocketMessage
 {

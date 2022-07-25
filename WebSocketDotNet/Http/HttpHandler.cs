@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using WebSocketDotNet.Utils;
 
 #if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
-namespace SocketWrenchSharp.Http;
+namespace WebSocketDotNet.Http;
 
 public class HttpHandler
 {

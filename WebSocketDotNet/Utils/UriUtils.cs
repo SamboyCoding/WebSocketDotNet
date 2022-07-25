@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace SocketWrenchSharp.Utils;
+namespace WebSocketDotNet.Utils;
 
 internal static class UriUtils
 {

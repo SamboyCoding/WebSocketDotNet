@@ -1,6 +1,6 @@
 ﻿using System.Net.WebSockets;
 using Xunit.Abstractions;
-using WebSocket = SocketWrenchSharp.WebSocket;
+using WebSocket = WebSocketDotNet.WebSocket;
 
 namespace WebSocketDotNet.Tests;
 
@@ -19,7 +19,7 @@ public class ReceiveTests : MakeConsoleWork
         
         Output.WriteLine($"Generated 16 bytes: [{string.Join(", ", binaryData)}]. Connecting...");
         
-        var clientSocket = new SocketWrenchSharp.WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
         
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         

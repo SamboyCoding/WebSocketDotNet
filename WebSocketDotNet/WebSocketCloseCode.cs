@@ -1,4 +1,4 @@
-﻿namespace SocketWrenchSharp;
+﻿namespace WebSocketDotNet;
 
 public enum WebSocketCloseCode : ushort
 {

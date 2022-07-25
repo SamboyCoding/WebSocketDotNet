@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:InternalsVisibleTo("WebSocketDotNet.Tests")]
 
-namespace SocketWrenchSharp;
+namespace WebSocketDotNet;
 
 public class AssemblyInfo
 {

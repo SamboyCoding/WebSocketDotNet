@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using SocketWrenchSharp.Http;
-using SocketWrenchSharp.Protocol;
+using WebSocketDotNet.Http;
+using WebSocketDotNet.Protocol;
 
 #if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
-namespace SocketWrenchSharp;
+namespace WebSocketDotNet.Utils;
 
 internal static class Extensions
 {

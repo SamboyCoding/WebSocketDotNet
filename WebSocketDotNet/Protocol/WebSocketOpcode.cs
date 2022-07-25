@@ -1,4 +1,4 @@
-﻿namespace SocketWrenchSharp.Protocol;
+﻿namespace WebSocketDotNet.Protocol;
 
 public enum WebSocketOpcode : byte
 {

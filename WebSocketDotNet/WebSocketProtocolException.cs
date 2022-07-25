@@ -1,7 +1,7 @@
 ﻿using System;
-using SocketWrenchSharp.Utils;
+using WebSocketDotNet.Utils;
 
-namespace SocketWrenchSharp;
+namespace WebSocketDotNet;
 
 /// <summary>
 /// If thrown anywhere, indicates that the socket should be closed with <see cref="WebSocketCloseCode.ProtocolError"/>

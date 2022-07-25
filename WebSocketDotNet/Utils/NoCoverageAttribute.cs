@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SocketWrenchSharp.Utils;
+namespace WebSocketDotNet.Utils;
 
 internal class NoCoverageAttribute : Attribute
 {

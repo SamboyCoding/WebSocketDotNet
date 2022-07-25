@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SocketWrenchSharp.Protocol;
+namespace WebSocketDotNet.Protocol;
 
 /// <summary>
 /// A WebSocketFrame is made up of one or more WebSocketFraments. It contains an opcode and a payload.

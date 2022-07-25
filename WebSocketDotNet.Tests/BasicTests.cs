@@ -1,7 +1,7 @@
 using System.Net.WebSockets;
-using SocketWrenchSharp.Messages;
+using WebSocketDotNet.Messages;
 using Xunit.Abstractions;
-using WebSocket = SocketWrenchSharp.WebSocket;
+using WebSocket = WebSocketDotNet.WebSocket;
 
 namespace WebSocketDotNet.Tests;
 
@@ -17,7 +17,7 @@ public class BasicTests : MakeConsoleWork
     {
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         
-        var clientSocket = new SocketWrenchSharp.WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
         
         //Specifically do NOT want the async version here
         clientSocket.Connect();
@@ -36,7 +36,7 @@ public class BasicTests : MakeConsoleWork
     {
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         
-        var clientSocket = new SocketWrenchSharp.WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
         
         await clientSocket.ConnectAsync();
 
@@ -61,7 +61,7 @@ public class BasicTests : MakeConsoleWork
 
         var task = TestUtils.StartServerAndWaitForFirstWsMessage(16);
 
-        var clientSocket = new SocketWrenchSharp.WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
         
         Output.WriteLine("Client: Connecting...");
         //Again, specifically do NOT want the async version here

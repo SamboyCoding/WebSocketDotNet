@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
-using SocketWrenchSharp.Utils;
+using WebSocketDotNet.Utils;
 
 #if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
-namespace SocketWrenchSharp.Protocol;
+namespace WebSocketDotNet.Protocol;
 
 public class WebSocketFragment
 {

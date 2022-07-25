@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
-using SocketWrenchSharp.Protocol;
-using SocketWrenchSharp.Utils;
+using WebSocketDotNet.Protocol;
+using WebSocketDotNet.Utils;
 
-namespace SocketWrenchSharp.Messages;
+namespace WebSocketDotNet.Messages;
 
 /// <summary>
 /// Represents a websocket frame with opcode 0x09 (PING).

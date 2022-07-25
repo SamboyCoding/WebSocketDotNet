@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
-using SocketWrenchSharp.Utils;
+using WebSocketDotNet.Utils;
 using Xunit.Abstractions;
 
 namespace WebSocketDotNet.Tests;

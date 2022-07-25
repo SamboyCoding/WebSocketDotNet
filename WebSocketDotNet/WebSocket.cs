@@ -6,16 +6,16 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using SocketWrenchSharp.Http;
-using SocketWrenchSharp.Messages;
-using SocketWrenchSharp.Protocol;
-using SocketWrenchSharp.Utils;
+using WebSocketDotNet.Http;
+using WebSocketDotNet.Messages;
+using WebSocketDotNet.Protocol;
+using WebSocketDotNet.Utils;
 
 #if SUPPORTS_ASYNC
 using System.Threading.Tasks;
 #endif
 
-namespace SocketWrenchSharp;
+namespace WebSocketDotNet;
 
 public class WebSocket
 {
