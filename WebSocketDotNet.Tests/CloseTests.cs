@@ -51,4 +51,38 @@ public class CloseTests : MakeConsoleWork
         
         // Thread.Sleep(500);
     }
+    
+    [Fact]
+    public async void TerminatingTheConnectionSendsACloseEvent()
+    {
+        var clientSocket = new WebSocket("http://localhost:60606/", false);
+        
+        var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
+
+        var closeTask = clientSocket.WaitForClose();
+
+        Output.WriteLine("Client: Connecting...");
+        
+        //Not testing connection here, so use async
+        await clientSocket.ConnectAsync();
+
+        var (context, listener) = await task;
+        
+        Output.WriteLine("Connected.");
+        
+        Assert.NotNull(context);
+        
+        Output.WriteLine("Server: Aborting connection now");
+
+        context!.WebSocket.Abort();
+
+        var (code, reason) = await closeTask;
+        
+        Output.WriteLine($"Client: Socket closed with code {code} and reason {reason}");
+        
+        Assert.Equal(WebSocketCloseCode.AbnormalClosure, code);
+        Assert.Equal("Unexpected close", reason);
+        
+        listener.Close();
+    }
 }

@@ -76,7 +76,7 @@ internal static class TestUtils
 
         void CloseHandler(WebSocketCloseCode code, string? reason)
         {
-            Console.WriteLine($"Socket closed: {code} {reason}");
+            Console.WriteLine($"WaitForClose: Client socket closed: {code} {reason}");
             tcs.SetResult((code, reason));
             socket.Closed -= CloseHandler;
         }
