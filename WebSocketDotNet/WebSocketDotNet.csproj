@@ -24,24 +24,33 @@
         <RepositoryUrl>https://github.com/SamboyCoding/WebSocketDotNet.git</RepositoryUrl>
         <TargetFrameworks>netstandard2.0;netstandard2.1;net3.5;net4.5;net6.0</TargetFrameworks>
         <Title>WebSocket.NET</Title>
-        <Version>0.5.5</Version>
+        <Version>1.0.0</Version>
 
         <DefineConstants Condition="'$(TargetFramework)' != 'net3.5'">SUPPORTS_ASYNC,SUPPORTS_SPAN</DefineConstants>
 
         <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     </PropertyGroup>
 
+    <Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec">
+        <ReadLinesFromFile File="../CHANGELOG.md" >
+            <Output TaskParameter="Lines" ItemName="ReleaseNoteLines"/>
+        </ReadLinesFromFile>
+        <PropertyGroup>
+            <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
+        </PropertyGroup>
+    </Target>
+
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
-        <PackageReference Include="IndexRange" Version="1.0.2"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+        <PackageReference Include="IndexRange" Version="1.0.2" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' != 'net3.5'">
-        <PackageReference Include="System.Memory" Version="4.5.5"/>
+        <PackageReference Include="System.Memory" Version="4.5.5" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-        <PackageReference Include="System.Net.Http" Version="4.3.4"/>
+        <PackageReference Include="System.Net.Http" Version="4.3.4" />
     </ItemGroup>
 
 </Project>

@@ -19,7 +19,7 @@ public class ReceiveTests : MakeConsoleWork
         
         Output.WriteLine($"Generated 16 bytes: [{string.Join(", ", binaryData)}]. Connecting...");
         
-        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", new() {AutoConnect = false});
         
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         
@@ -55,7 +55,7 @@ public class ReceiveTests : MakeConsoleWork
         
         Output.WriteLine($"Generated 16 bytes: [{string.Join(", ", binaryData)}]. Connecting...");
         
-        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", new() {AutoConnect = false});
         
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         

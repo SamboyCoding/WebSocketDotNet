@@ -137,14 +137,14 @@ internal class WebSocketFragment
 
     private void ComputeOutgoingLength()
     {
-        if (_rawPayload.Length < MaxSingleFragmentPayloadSize)
+        if (_rawPayload.Length <= MaxSingleFragmentPayloadSize)
         {
             _shortPayloadLength = (byte)_rawPayload.Length;
             _extendedPayloadLength = ulong.MaxValue;
             return;
         }
 
-        if (_rawPayload.Length < ushort.MaxValue)
+        if (_rawPayload.Length <= ushort.MaxValue)
             _shortPayloadLength = ShortLengthExtended16Bit;
         else
             _shortPayloadLength = ShortLengthExtended64Bit;

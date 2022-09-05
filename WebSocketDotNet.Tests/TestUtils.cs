@@ -41,7 +41,18 @@ internal static class TestUtils
         var ws = webSocketContext!.WebSocket;
 
         var ret = new byte[length];
-        var result = await ws.ReceiveAsync(new(ret), CancellationToken.None);
+        
+        //Receive loop
+        var segment = new ArraySegment<byte>(ret);
+        var result = await ws.ReceiveAsync(segment, CancellationToken.None);
+        while (!result.EndOfMessage)
+        {
+            var startPos = segment.Offset + result.Count;
+            segment = new(ret, startPos, length - startPos);
+            result = await ws.ReceiveAsync(segment, CancellationToken.None);
+            
+            Console.WriteLine("Got frame of length " + result.Count);
+        }
 
         return (new(result, ret), httpListener);
     }

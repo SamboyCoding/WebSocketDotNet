@@ -8,8 +8,6 @@ namespace WebSocketDotNet.Protocol;
 /// </summary>
 internal class WebSocketFrame
 {
-    //Generally speaking, let's try not to use the 64-bit length field.
-    private const int MaxFragmentSize = 0xFFFF;
 
     public WebSocketOpcode Opcode { get; set; }
     public byte[] Payload { get; set; }
@@ -20,10 +18,19 @@ internal class WebSocketFrame
         Payload = payload;
     }
 
-    internal List<WebSocketFragment> ToFragments()
+    internal List<WebSocketFragment> ToFragments(MessageChunkingMode configurationMessageChunkingMode)
     {
         var fragments = new List<WebSocketFragment>();
-        if (Payload.Length < MaxFragmentSize)
+        
+        var maxFragmentSize = configurationMessageChunkingMode switch
+        {
+            MessageChunkingMode.AlwaysUseExtendedLength => int.MaxValue, //Max length of an array. While, per spec, this could be 2^63 - 1, the max length of an array is 2^31 - 1
+            MessageChunkingMode.NeverUseExtendedLength => 0x7F,
+            MessageChunkingMode.LimitTo16BitExtendedLength => ushort.MaxValue,
+            _ => throw new ArgumentOutOfRangeException(nameof(configurationMessageChunkingMode), configurationMessageChunkingMode, null)
+        };
+        
+        if (Payload.Length < maxFragmentSize)
         {
             fragments.Add(new(true, Opcode, Payload, true));
         }
@@ -32,9 +39,10 @@ internal class WebSocketFrame
             //Chunk the payload into fragments.
             var offset = 0;
             var remaining = Payload.Length;
+            var opcodeToSend = Opcode;
             while (remaining > 0)
             {
-                var fragmentSize = Math.Min(remaining, MaxFragmentSize);
+                var fragmentSize = Math.Min(remaining, maxFragmentSize);
 
 #if SUPPORTS_SPAN
                 var payloadSlice = Payload.AsSpan(offset, fragmentSize).ToArray();
@@ -46,8 +54,10 @@ internal class WebSocketFrame
                 remaining -= fragmentSize;
                 offset += fragmentSize;
 
-                var fragment = new WebSocketFragment(remaining == 0, Opcode, payloadSlice, true);
+                var fragment = new WebSocketFragment(remaining == 0, opcodeToSend, payloadSlice, true);
                 fragments.Add(fragment);
+
+                opcodeToSend = WebSocketOpcode.Continuation; //Only the first fragment should have the opcode.
             }
         }
 

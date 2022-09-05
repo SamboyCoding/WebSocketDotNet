@@ -17,7 +17,7 @@ public class BasicTests : MakeConsoleWork
     {
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         
-        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", new() {AutoConnect = false});
         
         //Specifically do NOT want the async version here
         clientSocket.Connect();
@@ -36,7 +36,7 @@ public class BasicTests : MakeConsoleWork
     {
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
         
-        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", new() {AutoConnect = false});
         
         await clientSocket.ConnectAsync();
 
@@ -61,7 +61,7 @@ public class BasicTests : MakeConsoleWork
 
         var task = TestUtils.StartServerAndWaitForFirstWsMessage(16);
 
-        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", new() {AutoConnect = false});
         
         Output.WriteLine("Client: Connecting...");
         //Again, specifically do NOT want the async version here
@@ -95,7 +95,7 @@ public class BasicTests : MakeConsoleWork
 
         var task = TestUtils.StartServerAndWaitForFirstWsMessage(16);
 
-        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", new() {AutoConnect = false});
         Output.WriteLine("Client: Connecting...");
         //Again, specifically do NOT want the async version here
         await clientSocket.ConnectAsync();

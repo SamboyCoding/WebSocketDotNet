@@ -14,7 +14,7 @@ public class CloseTests : MakeConsoleWork
     [Fact]
     public async void CanHandleCloseFromServer()
     {
-        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", new() {AutoConnect = false});
         
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
 
@@ -54,7 +54,7 @@ public class CloseTests : MakeConsoleWork
     [Fact]
     public async void TerminatingTheConnectionSendsACloseEvent()
     {
-        var clientSocket = new WebSocket("http://127.0.0.1:60606/", false);
+        var clientSocket = new WebSocket("http://127.0.0.1:60606/", new() {AutoConnect = false});
         
         var task = TestUtils.SpinUpSocketServerAndWaitForConnect();
 

@@ -25,7 +25,6 @@ public class WebSocket
     private readonly SHA1 _sha1 = SHA1.Create();
     private readonly HttpHandler _httpHandler;
     private readonly List<WebSocketFragment> _currentPartialFragments = new();
-    private readonly bool _useReceiveThread;
 
 #if SUPPORTS_ASYNC
     private readonly SemaphoreSlim _sendLock = new(1, 1);
@@ -37,6 +36,7 @@ public class WebSocket
 
     private Thread? _receiveThread;
     private WebSocketCloseMessage? _closeMessage;
+    private WebSocketConfiguration _configuration;
 
     public WebSocketState State { get; private set; }
 
@@ -54,16 +54,21 @@ public class WebSocket
     /// <param name="url">The URL to connect to. You can use either http(s) or ws(s) as the protocol.</param>
     /// <param name="autoConnect">True (default) to connect immediately, false if you want to manually call Connect/ConnectAsync</param>
     /// <param name="useReceiveThread">True to start a thread to poll for incoming messages, false to not do so (you will have to manually call <see cref="ReceiveAllAvailable"/> periodically)</param>
-    public WebSocket(string url, bool autoConnect = true, bool useReceiveThread = true)
+    [Obsolete("Use the constructor that takes a WebSocketConfiguration instead")]
+    public WebSocket(string url, bool autoConnect = true, bool useReceiveThread = true) : this(url, new() { AutoConnect = autoConnect, UseAutomaticReceiveThread = useReceiveThread })
     {
+    }
+
+    public WebSocket(string url, WebSocketConfiguration configuration = default)
+    {
+        _configuration = configuration;
         UriUtils.ValidateUrlScheme(ref url);
 
-        _useReceiveThread = useReceiveThread;
         _httpHandler = new(new(url));
 
         State = WebSocketState.Closed;
 
-        if (autoConnect)
+        if (configuration.AutoConnect)
             Connect();
     }
 
@@ -78,7 +83,8 @@ public class WebSocket
         try
         {
             SendHandshakeRequest();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             OnException(e);
 
@@ -141,7 +147,7 @@ public class WebSocket
             throw new InvalidOperationException("WebSocket is not open");
 
         var frame = message.ToFrame();
-        var fragments = frame.ToFragments();
+        var fragments = frame.ToFragments(_configuration.MessageChunkingMode);
 
         var s = _httpHandler.GetOrOpenStream();
 
@@ -199,7 +205,7 @@ public class WebSocket
 
         if (code == WebSocketCloseCode.Reserved)
             throw new ArgumentException("Cannot use reserved close codes", nameof(code));
-        
+
         State = WebSocketState.Closing;
         _closeMessage = new(code, reason);
         Closing(code, reason);
@@ -403,7 +409,7 @@ public class WebSocket
 
         State = WebSocketState.Open;
 
-        if (_useReceiveThread)
+        if (_configuration.UseAutomaticReceiveThread)
         {
             _receiveThread = new(ReceiveLoop)
             {
@@ -421,7 +427,7 @@ public class WebSocket
             SendClose(WebSocketCloseCode.ProtocolError, pe.Message);
             return;
         }
-        
+
         if (e is IOException ioe)
         {
             if (ioe.InnerException is SocketException se2)
@@ -463,12 +469,12 @@ public class WebSocket
             {
                 _closeMessage = new(WebSocketCloseCode.ProtocolError, "Connection refused");
                 State = WebSocketState.Closing;
-                    
+
                 OnClose();
                 return;
             }
         }
-        
+
         SendClose(WebSocketCloseCode.InternalError, e.Message);
     }
 
@@ -484,7 +490,7 @@ public class WebSocket
             throw new InvalidOperationException("WebSocket is not open");
 
         var frame = message.ToFrame();
-        var fragments = frame.ToFragments();
+        var fragments = frame.ToFragments(_configuration.MessageChunkingMode);
 
         var s = await _httpHandler.GetOrOpenStreamAsync();
 
@@ -574,8 +580,8 @@ public class WebSocket
             throw new InvalidOperationException("WebSocket is not open");
 
         // if (!_httpHandler.AnyDataAvailable)
-            //Nothing to read
-            // return null;
+        //Nothing to read
+        // return null;
 
         var s = await _httpHandler.GetOrOpenStreamAsync();
         return await WebSocketFragment.ReadAsync(s);

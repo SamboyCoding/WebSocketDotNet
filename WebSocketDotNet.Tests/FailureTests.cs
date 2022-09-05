@@ -13,7 +13,7 @@ public class FailureTests : MakeConsoleWork
     [Fact]
     public async void TryingToConnectToAnUnopenPortFails()
     {
-        var ws = new WebSocket("ws://localhost:1", false);
+        var ws = new WebSocket("ws://localhost:1", new() {AutoConnect = false});
 
         var closeTask = ws.WaitForClose();
 
